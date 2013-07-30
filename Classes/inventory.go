@@ -9,7 +9,7 @@ type Product struct {
 
 // Inventory Class //
 type Inventory struct {
-    Products[]Product // Capitalized variables are visible outside of pkg
+    Products []Product // Capitalized variables are visible outside of pkg
     // products[]Product //Lowercase variables are not visible outside of pkg
 }
 
@@ -21,30 +21,21 @@ func (inventory Inventory) GetSumOfValues() int {
     return productSum
 }
 
-/*
-Thanks to http://www.golang-book.com/9 I was able to figure out 
-(inventory Inventory) performs much like a static function and 
-(inventory *Inventory) performs like an instance function, and is able
-to modify variables within the inventory instance. Cool
-*/
-func (inventory *Inventory) AddProduct(product Product) []Product {
-    size := len(inventory.Products)
-    if size + 1 > cap(inventory.Products) {  // reallocate
-        // Allocate double what's needed, for future growth.
-        newSlice := make([]Product, (size+1*2))
-        // The copy function is predeclared and works for any products type.
-        copy(newSlice, inventory.Products)
-        inventory.Products = newSlice
-    }
-    inventory.Products = inventory.Products[0:size+1]
-    inventory.Products[size] = product
-    return nil
+// Inventory Constructor //
+func makeInventory() *Inventory {
+    inventory := new(Inventory)
+    inventory.Products = make([]Product, 0)
+    return inventory   
 }
 
 // Main
 func main() {
-    inventory := new(Inventory)
+    inventory := makeInventory()
     alienArtifacts := Product{1, 20, 2}
-    inventory.AddProduct(alienArtifacts)
+    inventory.Products = append(inventory.Products, alienArtifacts)
+    indianaJones := Product{2, 2000, 1}
+    inventory.Products = append(inventory.Products, indianaJones)
+    rubixCubes := Product{3, 1, 10000}
+    inventory.Products = append(inventory.Products, rubixCubes)
     fmt.Println("SUM OF PRODUCTS: $", inventory.GetSumOfValues())
 }
