@@ -47,7 +47,7 @@ func (h *Hotel) CheckIfAvailable(currentDay int) {
     checkFunc := func(used, empty []Room) ([]Room, []Room){
         if len(used) > 0 {
             for i := 0; i < len(used); i++ {
-                if used[i].dayAvailable == currentDay {
+                if used[i].dayAvailable >= currentDay {
                     used, empty = h.CycleRoom(used, empty)
                 }           
             }
