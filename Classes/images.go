@@ -10,7 +10,7 @@ import (
 )
 
 
-//var imageViewerCmd := "eog"
+// XXX Allow for different image viewers to be used
 const imageViewer string = "eog"
 
 // Gallery abstract class //
@@ -52,21 +52,26 @@ func findFiles(imagePath, fileType string) []string {
     if err != nil {
         panic(err)    
     }
-    files = filterutils.Filter(
+    return filterutils.Filter(
         files, 
         func(i int) bool { return strings.HasSuffix(files[i], fileType) },
     )
-    return files
 }
 
-// main block
-func main() {
-    /*Show some images*/
+// Argument Parser
+func parseArgv() (string, string) {
     var imageType string
     var path string
     flag.StringVar(&path, "path", os.Getenv("GOPATH"), "A path to look for images")
     flag.StringVar(&imageType, "imageType", "bmp", "The type of image we wish to display")
     flag.Parse()
+    return imageType, path
+}
+
+// main block
+func main() {
+    /*Show some images*/
+    imageType, path := parseArgv()
     t := map[string]Gallery{"png": new(PNG), "bmp": new(BMP)}
     g := t[imageType]
     g.ShowImages(path)
