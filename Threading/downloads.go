@@ -1,15 +1,15 @@
 /*
-Goal of this program is to create some kind of download tracker. I am no where close to
-done with this. However I have accomplished the part requiring the creation of a wget
-type utility
+Goal of this program is to create some kind of download tracker.
 */
 package main
 
 import (
     "bufio"
+    "fmt"
     "io"
     "net/http"
     "os"
+    "time"
 )
 
 const (
@@ -26,10 +26,28 @@ func getResponse() *http.Response {
     return resp
 }
 
+func monitorFileSize(fileName string, downloadSize, timeout int64) {
+    var (
+        elapsed, start, size int64 = 0, 0, 0
+        ti *time.Time = &time.Time{}
+    )
+    start = ti.Unix()
+    // XXX Only print when at least 1 % more has been added to file
+    for size < downloadSize && elapsed < timeout{
+        file, _ := os.Open(fileName)
+        stats, _ := file.Stat()
+        size := stats.Size()
+        progress := float32(size)/float32(downloadSize) * 100
+        fmt.Println("Your download is %", progress, "percent finished")
+        elapsed = ti.Unix() - start
+        file.Close()
+    }
+}
+
 // Write the response of the GET request to file
-func writeToFile(resp *http.Response) {
+func writeToFile(fileName string, resp *http.Response) {
     // Credit for this implementation should go to github user billnapier
-    file, err := os.OpenFile("foo", os.O_CREATE|os.O_WRONLY, 0777)
+    file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0777)
     defer file.Close()
     bufferedWriter := bufio.NewWriterSize(file, bufSize)
     errorChecker(err)
@@ -47,5 +65,7 @@ func errorChecker(err error) {
 // Main function
 func main() {
     resp := getResponse()
-    writeToFile(resp)
+    fileName := "foo"
+    go monitorFileSize(fileName, resp.ContentLength, 100)
+    writeToFile(fileName, resp)
 }
