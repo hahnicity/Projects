@@ -4,9 +4,8 @@ Goal of this program is to create some kind of download tracker.
 package main
 
 import (
-    "bufio"
     "fmt"
-    "io"
+    "github.com/hahnicity/go-wget"
     "net/http"
     "os"
     "time"
@@ -17,14 +16,6 @@ const (
     randomURL = "http://archive.ipython.org/release/1.0.0/ipython-1.0.0.zip"
 )
 
-// Make the GET request to a server, return the response
-func getResponse() *http.Response {
-    tr := new(http.Transport)
-    client := &http.Client{Transport: tr}
-    resp, err := client.Get(randomURL)
-    errorChecker(err)
-    return resp
-}
 
 func monitorFileSize(fileName string, downloadSize, timeout int64) {
     var (
@@ -42,6 +33,17 @@ func monitorFileSize(fileName string, downloadSize, timeout int64) {
     }
 }
 
+func getDownloadSize(url string) int64 {
+    tr := new(http.Transport)
+    client := &http.Client{Transport: tr}
+    resp, err := client.Get(randomURL)
+    if err != nil {
+        panic(err)
+    }
+    return resp.ContentLength
+}
+
+
 //Monitor the progress of the download file
 func getProgress(fileName string, downloadSize int64) float32 {
     file, _ := os.Open(fileName)
@@ -51,29 +53,13 @@ func getProgress(fileName string, downloadSize int64) float32 {
     return progress
 }
 
-// Write the response of the GET request to file
-func writeToFile(fileName string, resp *http.Response) {
-    // Credit for this implementation should go to github user billnapier
-    file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0777)
-    defer file.Close()
-    bufferedWriter := bufio.NewWriterSize(file, bufSize)
-    errorChecker(err)
-    _, err = io.Copy(bufferedWriter, resp.Body)
-    errorChecker(err)
-}
-
-// Check if we received an error on our last function call
-func errorChecker(err error) {
-    if err != nil {
-        panic(err)
-    }
-}
 
 // Main function
 func main() {
-    resp := getResponse()
     fileName := "foo"
+    resp := wget.MakeRequest(randomURL)
     go monitorFileSize(fileName, resp.ContentLength, 100)
-    writeToFile(fileName, resp)
+    wget.WriteToFile(fileName, resp)
+    wget.Wget(randomURL, fileName)
     fmt.Print("\n")
 }
