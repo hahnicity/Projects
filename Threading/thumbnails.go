@@ -67,18 +67,22 @@ func resizeImages(path string, dim *Dimensions, progress chan int) {
     file, err := os.Open(path)
     if err != nil {
         log.Fatal(err)        
+        progress <- 1
         return
     }
     img, err := jpeg.Decode(file)
     file.Close()
     if err != nil {
         log.Fatal(err)
+        progress <- 1
         return   
     }
     res := resize.Resize(dim.height, dim.width, img, resize.Lanczos3)
     out, err := os.Create(PutImagePath + strconv.FormatInt(rand.Int63(),36) + ".jpg")
     if err != nil {
-        log.Fatal(err)    
+        log.Fatal(err)
+        progress <- 1
+        return
     }
     defer out.Close()
     jpeg.Encode(out, res, nil)
@@ -90,7 +94,6 @@ func monitorProgress(progress chan int, n int) {
     totalFiles := 0
     for received := range progress {
         totalFiles = totalFiles + received
-        // XXX What happens if theres an error? This file will loop infinitely
         if totalFiles >= n {
             close(progress)    
         }
