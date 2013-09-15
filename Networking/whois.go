@@ -18,7 +18,8 @@ func MakeRequest() {
         panic(err)    
     }
     defer conn.Close()
-    fmt.Fprintf(conn, "%s \n", flag.Arg(0))  // I guess this is similar to conn.Write
+    conn.Write([]byte(flag.Arg(0) + "\n"))
+    //fmt.Fprintf(conn, "%s \n", flag.Arg(0))
     resp, err := ioutil.ReadAll(conn)
     if err != nil {
         panic(err)    
