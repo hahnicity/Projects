@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    char string[] = "String";
+    if (argc != 2) {
+        printf("You must enter in a string to reverse!\n");
+        return 1;
+    }
+    char * string = argv[1];
     int len = strlen(string);
     char reversed[len];
     int idx;
